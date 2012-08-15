@@ -8,12 +8,21 @@ class MoviesController < ApplicationController
 
   def index
     sort_by = params[:sort]
-    if sort_by == "sortByTitle"
-      @movies = Movie.find(:all, :order => 'title ASC')
-    elsif sort_by == "sortByDate"
-      @movies = Movie.find(:all, :order => 'release_date ASC')
+    if params.has_key?(:ratings)
+      ratings = params[:ratings].keys
     else
-      @movies = Movie.all
+      ratings = []
+    end  
+    params.has_key?(:ratings) ? @ratings_selected = params[:ratings].keys : @ratings_selected = []
+    @all_ratings = Movie.possible_ratings
+    puts "Here are ratings: #{ratings}"
+    #@all_ratings = ['G','PG','PG-13','R']
+    if sort_by == "sortByTitle"
+      @movies = Movie.find(:all, :order => 'title ASC', :conditions => [ "rating IN (?)", ratings])
+    elsif sort_by == "sortByDate"
+      @movies = Movie.find(:all, :order => 'release_date ASC', :conditions => [ "rating IN (?)", ratings])
+    else
+      @movies = Movie.find(:all, :conditions => [ "rating IN (?)", ratings])
     end
   end
 
