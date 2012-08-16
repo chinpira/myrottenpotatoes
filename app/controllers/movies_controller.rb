@@ -7,9 +7,28 @@ class MoviesController < ApplicationController
   end
 
   def index
+    params_changed = false
+    if session.has_key? :ratings
+      unless params.has_key? :ratings
+        params[:ratings] = session[:ratings]
+        params_changed = true
+      end
+    end
+    if session.has_key? :sort
+      unless params.has_key? :sort
+        params[:sort] = session[:sort]
+        params_changed = true
+      end
+    end
+    if params_changed
+      flash.keep
+      redirect_to movies_path(params)
+    end
+    
     sort_by = params[:sort]
     if params.has_key?(:ratings)
       ratings = params[:ratings].keys
+      session[:ratings] = params[:ratings]
     else
       ratings = []
     end  
@@ -24,6 +43,7 @@ class MoviesController < ApplicationController
     else
       @movies = Movie.find(:all, :conditions => [ "rating IN (?)", ratings])
     end
+    session[:sort] = sort_by
   end
 
   def new
